@@ -1,0 +1,5 @@
+const { query } = require('../config/database')
+const rank = { read_only: 1, family_caregiver: 2, primary_caregiver: 3 }
+function requireRole(minimum) { return (req,res,next) => rank[req.patientAccess?.role] >= rank[minimum] ? next() : res.status(403).json({ error:{ code:'FORBIDDEN', message:'Your caregiver role does not allow this action.' } }) }
+async function requirePatientAccess(req, res, next) { const patientId = req.params.patientId || req.body.patientId || req.query.patientId; if (!patientId) return res.status(400).json({ error:{ code:'PATIENT_REQUIRED', message:'A patient ID is required.' } }); try { const { rows } = await query('SELECT patient_id, role FROM family_patient_access WHERE patient_id = $1 AND user_id = $2 AND revoked_at IS NULL', [patientId, req.user.sub]); if (!rows[0]) return res.status(403).json({ error:{ code:'PATIENT_ACCESS_DENIED', message:'You do not have access to this patient.' } }); req.patientAccess = rows[0]; next() } catch (error) { next(error) } }
+module.exports = { requirePatientAccess, requireRole }

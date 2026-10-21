@@ -1,0 +1,12 @@
+const { z } = require('zod')
+const uuid = z.string().uuid()
+const text = z.string().trim().min(1).max(500)
+const optionalText = z.string().trim().max(5000).optional().nullable()
+const patient = z.object({ firstName:text, lastName:text, dateOfBirth:z.string().date().optional().nullable(), timezone:z.string().max(64).default('UTC'), status:z.enum(['active','archived']).default('active'), homeAddress:optionalText, emergencyContact:z.object({ name:text, phone:text, relationship:text }).optional().nullable() })
+const person = z.object({ name:text, relationship:text, notes:optionalText, reviewStatus:z.enum(['pending','verified','rejected']).default('pending') })
+const routine = z.object({ title:text, category:z.enum(['medicine','meal','exercise','activity','other']).default('other'), recurrence:z.string().max(200).default('daily'), reminderTime:z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(), timezone:z.string().max(64).default('UTC'), active:z.boolean().default(true) })
+const task = z.object({ routineId:uuid.optional().nullable(), title:text, dueAt:z.string().datetime(), status:z.enum(['pending','completed','skipped']).default('pending') })
+const alert = z.object({ type:text, severity:z.enum(['low','medium','high','critical']).default('medium'), message:text, assignedUserId:uuid.optional().nullable() })
+const location = z.object({ latitude:z.number().gte(-90).lte(90), longitude:z.number().gte(-180).lte(180), source:z.string().max(100).default('manual'), recordedAt:z.string().datetime().optional() })
+const doctor = z.object({ name:text, specialty:optionalText, phone:text, notes:optionalText })
+module.exports = { z, uuid, patient, person, routine, task, alert, location, doctor }

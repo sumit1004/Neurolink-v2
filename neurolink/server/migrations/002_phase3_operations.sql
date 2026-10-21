@@ -1,0 +1,11 @@
+ALTER TABLE daily_summaries ADD COLUMN IF NOT EXISTS model text, ADD COLUMN IF NOT EXISTS source_references jsonb NOT NULL DEFAULT '[]', ADD COLUMN IF NOT EXISTS generated_at timestamptz, ADD COLUMN IF NOT EXISTS failure_code text;
+ALTER TABLE smartwatch_devices ADD COLUMN IF NOT EXISTS supported_measurements jsonb NOT NULL DEFAULT '[]', ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true, ADD COLUMN IF NOT EXISTS ingestion_secret_hash text;
+ALTER TABLE smartwatch_readings ADD COLUMN IF NOT EXISTS idempotency_key text, ADD COLUMN IF NOT EXISTS ingested_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE device_events ADD COLUMN IF NOT EXISTS idempotency_key text, ADD COLUMN IF NOT EXISTS ingested_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE locations ADD COLUMN IF NOT EXISTS accuracy_meters numeric, ADD COLUMN IF NOT EXISTS consent_reference text, ADD COLUMN IF NOT EXISTS ingested_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS source_event_id uuid, ADD COLUMN IF NOT EXISTS source text, ADD COLUMN IF NOT EXISTS dedupe_key text;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_readings_idempotency ON smartwatch_readings(device_id,idempotency_key) WHERE idempotency_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_events_idempotency ON device_events(device_id,idempotency_key) WHERE idempotency_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_alert_dedupe ON alerts(patient_id,dedupe_key) WHERE dedupe_key IS NOT NULL AND status <> 'resolved';
+CREATE INDEX IF NOT EXISTS idx_summaries_patient_date ON daily_summaries(patient_id,summary_date DESC);
+CREATE INDEX IF NOT EXISTS idx_jobs_due_status ON notification_jobs(status,scheduled_for);
