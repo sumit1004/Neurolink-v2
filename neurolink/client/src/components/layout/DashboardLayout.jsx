@@ -1,0 +1,7 @@
+import { Icon } from '../common/Icon'
+import { modules, patient } from '../../data/fixtures'
+
+const iconFor = (slug) => slug.includes('health') || slug === 'smartwatch' ? 'heart' : slug === 'location' ? 'pin' : slug === 'alerts' ? 'bell' : slug === 'people' || slug === 'doctors' ? 'people' : slug === 'settings' ? 'settings' : slug === 'health-records' || slug === 'reports' ? 'file' : 'home'
+export function DashboardLayout({ current, onNavigate, onLogout, children }) {
+  return <div className="app-shell"><aside className="sidebar"><button className="brand brand-button" onClick={() => onNavigate('overview')}><span className="brand-mark">N</span><span>NeuroLink</span></button><div className="patient-chip"><span className="avatar">{patient.initials}</span><div><strong>{patient.name}</strong><small><i /> {patient.status}</small></div></div><nav aria-label="Dashboard">{modules.map(([label, slug]) => <button key={slug} className={current === slug ? 'nav-link active' : 'nav-link'} onClick={() => onNavigate(slug)}><Icon name={iconFor(slug)} />{label}</button>)}</nav><button className="logout" onClick={onLogout}>Sign out</button></aside><main className="main"><header className="topbar"><button className="mobile-menu" aria-label="Open menu"><Icon name="menu" /></button><div className="topbar-right"><button className="icon-button" aria-label="Notifications"><Icon name="bell" /></button><span className="avatar avatar-small">DE</span><span className="account-name">David Ellis</span></div></header>{children}</main></div>
+}
